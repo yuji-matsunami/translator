@@ -15,3 +15,7 @@ pip install -r requirements.txt
 
 - 作成中なので、READMEは後ほど詳しく更新します。
 - 日英翻訳or英日翻訳にも後ほど対応させる予定です。
+
+## 参考
+
+- [Pytorchチュートリアル](https://pytorch.org/tutorials/beginner/translation_transformer.html)
