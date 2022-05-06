@@ -2,8 +2,10 @@ import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence
 from typing import List
+from timeit import default_timer as timer
 from preprocess_data import make_vocab_transform
 from model import DEVICE, Seq2Seq
+from train import train_epoch, evaluate
 
 
 def sequential_transforms(*transforms):
@@ -20,6 +22,7 @@ def tensor_transform(token_ids: List[int]):
                       torch.tensor([EOS_IDX])))
 
 
+
 if __name__ == "__main__":
     """
     # ハイパーパラメータの設定
@@ -30,8 +33,8 @@ if __name__ == "__main__":
     torch.manual_seed(0)
     vocab_transform, token_transform = make_vocab_transform(
         UNK_IDX, src_ln=SRC_LANGUAGE, tgt_ln=TGT_LANGUAGE)
-    SRC_VOCAB_SIZE = len(token_transform[SRC_LANGUAGE])
-    TGT_VOCAB_SIZE = len(token_transform[TGT_LANGUAGE])
+    SRC_VOCAB_SIZE = len(vocab_transform[SRC_LANGUAGE])
+    TGT_VOCAB_SIZE = len(vocab_transform[TGT_LANGUAGE])
     print(SRC_VOCAB_SIZE, TGT_VOCAB_SIZE)
     EMB_SIZE = 512
     NHEAD = 8
@@ -61,4 +64,12 @@ if __name__ == "__main__":
         text_transform[ln] = sequential_transforms(token_transform[ln], # tokenizeする
                                                    vocab_transform[ln], # 単語IDにする
                                                    tensor_transform) # BOS,EOSを追加する
-    
+
+    NUM_EPOCHS = 18
+
+    for epoch in range(1, NUM_EPOCHS+1):
+        start_time = timer()
+        train_loss = train_epoch(transformer, optimizer, loss_fn, SRC_LANGUAGE, TGT_LANGUAGE, BATCH_SIZE, DEVICE, text_transform)
+        end_time = timer()
+        val_loss = evaluate(transformer, loss_fn, SRC_LANGUAGE, TGT_LANGUAGE, BATCH_SIZE, DEVICE, text_transform)
+        print(f"Epoch:{epoch}, Train loss:{train_loss:.3f}, Val loss: {val_loss:.3f}, Epoch time = {(end_time - start_time):.3f}s")
