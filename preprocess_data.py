@@ -29,6 +29,11 @@ def make_vocab_transform(unk_idx:int, src_ln:str, tgt_ln:str) -> Tuple[Dict, Dic
     Returns:
         Dict[str, Any]: _description_ {"de": Vocab(), "en": Vocab()}
     """
+    token_transform = {}
+    vocab_transform = {}
+    token_transform[src_ln] = get_tokenizer('spacy', language='de_core_news_sm')
+    token_transform[tgt_ln] = get_tokenizer('spacy', language='en_core_web_sm')
+
     special_simbols = ['<unk>', '<pad>', '<bos>', '<eos>']
 
     for ln in [src_ln, tgt_ln]:

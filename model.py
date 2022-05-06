@@ -1,4 +1,3 @@
-from turtle import forward
 import torch
 from torch import Tensor
 import torch.nn as nn
@@ -27,7 +26,7 @@ class PositionalEncoding(nn.Module):
 
 class TokenEmbedding(nn.Module):
     def __init__(self, vocab_size: int, emb_size: int) -> None:
-        super(TokenEmbedding).__init__()
+        super(TokenEmbedding, self).__init__()
         self.embedding = nn.Embedding(vocab_size, emb_size)
         self.emb_size = emb_size
 
@@ -46,7 +45,7 @@ class Seq2Seq(nn.Module):
                  dim_feedforward: int = 512,
                  dropout: float = 0.1
                  ) -> None:
-        super(Seq2Seq).__init__()
+        super(Seq2Seq, self).__init__()
         self.transformer = Transformer(d_model=emb_size,
                                        nhead=nhead,
                                        num_encoder_layers=num_encoder_layers,
@@ -94,11 +93,10 @@ def generate_square_subsequent_mask(sz):
     return mask
 
 
-def create_mask(src, tgt):
+def create_mask(src, tgt, pad_idx):
     # encoder側はPADを参照しないように
     # decoder側はPADと未来の単語を参照しないように
 
-    global PAD_IDX
     src_seq_len = src.shape[0]
     tgt_seq_len = tgt.shape[0]
 
@@ -106,8 +104,8 @@ def create_mask(src, tgt):
     src_mask = torch.zeros((src_seq_len, src_seq_len),
                            device=DEVICE).type(torch.bool)
 
-    src_padding_mask = (src == PAD_IDX).transpose(0, 1)
-    tgt_padding_mask = (tgt == PAD_IDX).transpose(0, 1)
+    src_padding_mask = (src == pad_idx).transpose(0, 1)
+    tgt_padding_mask = (tgt == pad_idx).transpose(0, 1)
     return src_mask, tgt_mask, src_padding_mask, tgt_padding_mask
 
 
