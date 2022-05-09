@@ -6,6 +6,7 @@ from timeit import default_timer as timer
 from preprocess_data import make_vocab_transform
 from model import DEVICE, Seq2Seq
 from train import train_epoch, evaluate
+from translator import Translator
 
 
 def sequential_transforms(*transforms):
@@ -73,3 +74,14 @@ if __name__ == "__main__":
         end_time = timer()
         val_loss = evaluate(transformer, loss_fn, SRC_LANGUAGE, TGT_LANGUAGE, BATCH_SIZE, DEVICE, text_transform)
         print(f"Epoch:{epoch}, Train loss:{train_loss:.3f}, Val loss: {val_loss:.3f}, Epoch time = {(end_time - start_time):.3f}s")
+
+    # modelの保存
+    model_path = "transformer.pth"
+    torch.save(transformer.state_dict(), model_path)
+
+    exit()
+    translator = Translator(transformer, token_transform, text_transform, vocab_transform, SRC_LANGUAGE, TGT_LANGUAGE, DEVICE, BOS_IDX, EOS_IDX)
+    print("Eine Gruppe von Menschen steht vor einem Iglu .")
+    print("↓↓↓↓↓↓↓↓↓↓↓")
+    print(translator.translate(src_sentence="Eine Gruppe von Menschen steht vor einem Iglu ."))
+    print(translator.get_bleu_score())
