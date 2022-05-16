@@ -2,14 +2,14 @@ from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
 from torchtext.datasets import Multi30k
 from typing import Iterable, List, Dict, Any, Tuple
-
-SRC_LANGUAGE = 'de'
+from dataset import JParaCrawlDataset
+SRC_LANGUAGE = 'ja'
 TGT_LANGUAGE = 'en'
 
 token_transform = {}
 vocab_transform = {}
 
-token_transform[SRC_LANGUAGE] = get_tokenizer('spacy', language='de_core_news_sm')
+token_transform[SRC_LANGUAGE] = get_tokenizer('spacy', language='ja_ginza')
 token_transform[TGT_LANGUAGE] = get_tokenizer('spacy', language='en_core_web_sm')
 
 
@@ -31,13 +31,13 @@ def make_vocab_transform(unk_idx:int, src_ln:str, tgt_ln:str) -> Tuple[Dict, Dic
     """
     token_transform = {}
     vocab_transform = {}
-    token_transform[src_ln] = get_tokenizer('spacy', language='de_core_news_sm')
+    token_transform[src_ln] = get_tokenizer('spacy', language='ja_ginza')
     token_transform[tgt_ln] = get_tokenizer('spacy', language='en_core_web_sm')
 
     special_simbols = ['<unk>', '<pad>', '<bos>', '<eos>']
 
     for ln in [src_ln, tgt_ln]:
-        train_iter = Multi30k(split='train', language_pair=(src_ln, tgt_ln))
+        train_iter = JParaCrawlDataset("datasets/en-ja/en-ja.bicleaner05.txt", split="train")
         vocab_transform[ln] = build_vocab_from_iterator(yield_tokens(train_iter, ln),
                                                         min_freq=1,
                                                         specials=special_simbols,
@@ -52,7 +52,7 @@ def main():
     special_simbols = ['<unk>', '<pad>', '<bos>', '<eos>']
 
     for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
-        train_iter = Multi30k(split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
+        train_iter = JParaCrawlDataset("datasets/en-ja/en-ja.bicleaner05.txt", split='train')
         vocab_transform[ln] = build_vocab_from_iterator(yield_tokens(train_iter, ln),
                                                         min_freq=1,
                                                         specials=special_simbols,

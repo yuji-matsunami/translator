@@ -2,6 +2,7 @@ from torch.utils.data import DataLoader
 from torchtext.datasets import Multi30k
 from torch.nn.utils.rnn import pad_sequence
 from model import create_mask
+from dataset import JParaCrawlDataset
 
 text_transform = {}
 SRC_LANGUAGE = ""
@@ -23,9 +24,12 @@ def train_epoch(model, optimizer, loss_fn, src_ln, tgt_ln, batch_size, device, t
     text_transform = txt_transform
     SRC_LANGUAGE = src_ln
     TGT_LANGUAGE = tgt_ln
+    DATASET_PATH = "datasets/en-ja/en-ja.bicleaner05.txt"
     model.train()
     losses = 0
-    train_iter = Multi30k(split='train', language_pair=(src_ln, tgt_ln))
+    # train_iter = Multi30k(split='train', language_pair=(src_ln, tgt_ln))
+    train_iter = JParaCrawlDataset(DATASET_PATH, split='train')
+    print(len(train_iter))
     train_dataloader = DataLoader(train_iter, batch_size=batch_size, collate_fn=collate_fn)
     cnt = 0
     for src, tgt in train_dataloader:
@@ -50,11 +54,12 @@ def evaluate(model, loss_fn, src_ln, tgt_ln, batch_size, device, txt_transform):
     text_transform = txt_transform
     SRC_LANGUAGE = src_ln
     TGT_LANGUAGE = tgt_ln
-
+    DATASET_PATH = "datasets/en-ja/en-ja.bicleaner05.txt"
     model.eval()
     losses = 0
 
-    val_iter = Multi30k(split='valid', language_pair=(src_ln, tgt_ln))
+    # val_iter = Multi30k(split='valid', language_pair=(src_ln, tgt_ln))
+    val_iter = JParaCrawlDataset(DATASET_PATH, split='valid')
     val_dataloader = DataLoader(val_iter, batch_size=batch_size, collate_fn=collate_fn)
     
     cnt = 0
