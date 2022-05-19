@@ -3,3 +3,4 @@
 transformer.pth
 /datasets
 jp_to_en.pth
+logfile.log
