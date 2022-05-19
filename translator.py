@@ -1,3 +1,4 @@
+from weakref import ref
 from pyparsing import nums
 import torch
 from typing import Dict
@@ -75,8 +76,8 @@ class Translator:
             tgt_tokens = self.__greedy_decode(
                 src, src_mask, max_len=num_tokens+5).flatten()
             candidate_corpus.append(self.vocab_transform[self.tgt_language].lookup_tokens(list(tgt_tokens.cpu().numpy())))
-            reference_corpus.append(['<bos>'] + self.token_transform[self.tgt_language](t) + ['<eos>'])
-        print(reference_corpus[0])
-        print(candidate_corpus[0])
-        return bleu_score(candidate_corpus, [reference_corpus])
+            reference_corpus.append([['<bos>'] + self.token_transform[self.tgt_language](t) + ['<eos>']])
+        print(len(candidate_corpus))
+        print(len(reference_corpus))
+        return bleu_score(candidate_corpus, reference_corpus)
 
