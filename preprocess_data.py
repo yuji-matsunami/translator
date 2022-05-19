@@ -2,7 +2,7 @@ from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
 from torchtext.datasets import Multi30k
 from typing import Iterable, List, Dict, Any, Tuple
-from dataset import JParaCrawlDataset
+from dataset import JParaCrawlDataset, KFTTDataset
 SRC_LANGUAGE = 'ja'
 TGT_LANGUAGE = 'en'
 
@@ -37,7 +37,8 @@ def make_vocab_transform(unk_idx:int, src_ln:str, tgt_ln:str) -> Tuple[Dict, Dic
     special_simbols = ['<unk>', '<pad>', '<bos>', '<eos>']
 
     for ln in [src_ln, tgt_ln]:
-        train_iter = JParaCrawlDataset("datasets/en-ja/en-ja.bicleaner05.txt", split="train")
+        # train_iter = JParaCrawlDataset("datasets/en-ja/en-ja.bicleaner05.txt", split="train")
+        train_iter = KFTTDataset("datasets/kftt-data-1.0/data/orig", split="train")
         vocab_transform[ln] = build_vocab_from_iterator(yield_tokens(train_iter, ln),
                                                         min_freq=1,
                                                         specials=special_simbols,
@@ -52,7 +53,8 @@ def main():
     special_simbols = ['<unk>', '<pad>', '<bos>', '<eos>']
 
     for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
-        train_iter = JParaCrawlDataset("datasets/en-ja/en-ja.bicleaner05.txt", split='train')
+        # train_iter = JParaCrawlDataset("datasets/en-ja/en-ja.bicleaner05.txt", split='train')
+        train_iter = KFTTDataset("datasets/kftt-data-1.0/data/orig", split="train")
         vocab_transform[ln] = build_vocab_from_iterator(yield_tokens(train_iter, ln),
                                                         min_freq=1,
                                                         specials=special_simbols,

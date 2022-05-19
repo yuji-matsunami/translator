@@ -47,7 +47,47 @@ class JParaCrawlDataset(Dataset):
         else:
             return len(self.src_test)
 
+class KFTTDataset(Dataset):
+    def __init__(self, data_path:str, split:str) -> None:
+        super().__init__()
+        self.data_path = data_path
+        self.split = split
+        self.src, self.tgt = self.load_dataset()
+
+    def __remove_newlinecode(self, l:List[str]) -> List[str]:
+        new_list = list()
+        for s in l:
+            s = s.replace("\n", "")
+            new_list.append(s)
+        return new_list
+
+    def load_dataset(self) -> Tuple[List[str], List[str]]:
+        if self.split == "train":
+            src_file = self.data_path + "/kyoto-train.ja"
+            tgt_file = self.data_path + "/kyoto-train.en"
+        elif self.split == "valid":
+            src_file = self.data_path + "/kyoto-dev.ja"
+            tgt_file = self.data_path + "/kyoto-dev.en"
+        else:
+            src_file = self.data_path + "/kyoto-test.ja"
+            tgt_file = self.data_path + "/kyoto-test.en"
+
+        with open(src_file, 'r') as f:
+            src = f.readlines()
+        with open(tgt_file, 'r') as f:
+            tgt = f.readlines()
+        
+        src = self.__remove_newlinecode(src)
+        tgt = self.__remove_newlinecode(tgt)
+        return src, tgt
+    
+    def __getitem__(self, index: int) -> Tuple[str, str]:
+        return self.src[index], self.tgt[index]
+    
+    def __len__(self) -> int:
+        return len(self.src)
 
 if __name__ == "__main__":
-    train_datasets = JParaCrawlDataset(
-        "datasets/en-ja/en-ja.bicleaner05.txt", split="train")
+    # train_datasets = JParaCrawlDataset(
+        # "datasets/en-ja/en-ja.bicleaner05.txt", split="train")
+    train_datasets = KFTTDataset("datasets/kftt-data-1.0/data/orig", split="train")
