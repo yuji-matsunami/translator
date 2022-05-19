@@ -5,7 +5,7 @@ from typing import List
 from timeit import default_timer as timer
 from preprocess_data import make_vocab_transform
 from model import DEVICE, Seq2Seq
-from train import train_epoch, evaluate
+from train import train_epoch, evaluate, sarch_tensor_length
 from translator import Translator
 
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     EMB_SIZE = 512
     NHEAD = 8
     FFN_HID_DIM = 512
-    BATCH_SIZE = 32
+    BATCH_SIZE = 16
     NUM_ENCODE_LAYERS = 3
     NUM_DECODE_LAYERS = 3
 
@@ -67,6 +67,7 @@ if __name__ == "__main__":
     # transformer.load_state_dict(torch.load(model_path))
 
     NUM_EPOCHS = 18
+    # sarch_tensor_length(SRC_LANGUAGE, TGT_LANGUAGE, BATCH_SIZE, text_transform)
     """train"""
     for epoch in range(1, NUM_EPOCHS+1):
         start_time = timer()
