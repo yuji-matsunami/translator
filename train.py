@@ -1,11 +1,12 @@
 import torch
 from torch.utils.data import DataLoader
-from torchtext.datasets import Multi30k
+# from torchtext.datasets import Multi30k
 from torch.nn.utils.rnn import pad_sequence
 from model import create_mask
-from dataset import JParaCrawlDataset, KFTTDataset
+from dataset import JParaCrawlDataset, KFTTDataset, MiniTanakaDataset
 from tqdm import tqdm
 import logging
+import gc
 
 text_transform = {}
 SRC_LANGUAGE = ""
@@ -27,18 +28,20 @@ def train_epoch(model, optimizer, loss_fn, src_ln, tgt_ln, batch_size, device, t
     text_transform = txt_transform
     SRC_LANGUAGE = src_ln
     TGT_LANGUAGE = tgt_ln
-    DATASET_PATH = "datasets/kftt-data-1.0/data/orig"
+    DATASET_PATH = "datasets/kftt-data-1.0/data/tok"
     model.train()
     losses = 0
     # train_iter = Multi30k(split='train', language_pair=(src_ln, tgt_ln))
     # train_iter = JParaCrawlDataset(DATASET_PATH, split='train')
     train_iter = KFTTDataset(DATASET_PATH, split="train")
-    logging.basicConfig(filename='logfile.log', level=logging.INFO)
+    # train_iter = MiniTanakaDataset(DATASET_PATH, split="train", aug=True)
+    # logging.basicConfig(filename='logfile.log', level=logging.INFO)
     print(len(train_iter))
     train_dataloader = DataLoader(train_iter, batch_size=batch_size, collate_fn=collate_fn)
+    del train_iter
     cnt = 0
     for src, tgt in tqdm(train_dataloader):
-        logging.info('src:%d, tgt:%d', src.size(0), tgt.size(0))
+        # logging.info('src:%d, tgt:%d', src.size(0), tgt.size(0))
         src = src.to(device)
         tgt = tgt.to(device)
         tgt_input = tgt[:-1, :]
@@ -55,20 +58,24 @@ def train_epoch(model, optimizer, loss_fn, src_ln, tgt_ln, batch_size, device, t
         del loss, tgt_out # 使わなくなった計算グラフを削除
         torch.cuda.empty_cache()
         cnt += 1
+    del train_dataloader
+    gc.collect() # 明示的にメモリ解放する
     return losses / cnt
 
+@torch.no_grad()
 def evaluate(model, loss_fn, src_ln, tgt_ln, batch_size, device, txt_transform):
     global text_transform, SRC_LANGUAGE, TGT_LANGUAGE
     text_transform = txt_transform
     SRC_LANGUAGE = src_ln
     TGT_LANGUAGE = tgt_ln
-    DATASET_PATH = "datasets/kftt-data-1.0/data/orig"
+    DATASET_PATH = "datasets/kftt-data-1.0/data/tok"
     model.eval()
     losses = 0
 
     # val_iter = Multi30k(split='valid', language_pair=(src_ln, tgt_ln))
     # val_iter = JParaCrawlDataset(DATASET_PATH, split='valid')
     val_iter = KFTTDataset(DATASET_PATH, split="valid")
+    # val_iter = MiniTanakaDataset(DATASET_PATH, split="valid")
     val_dataloader = DataLoader(val_iter, batch_size=batch_size, collate_fn=collate_fn)
     
     cnt = 0
