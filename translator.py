@@ -4,8 +4,9 @@ import torch
 from typing import Dict
 from model import generate_square_subsequent_mask
 from torchtext.data.metrics import bleu_score
-from torchtext.datasets import Multi30k
-
+# from torchtext.datasets import Multi30k
+from dataset import KFTTDataset, MiniTanakaDataset
+import csv
 
 class Translator:
     """
@@ -64,8 +65,9 @@ class Translator:
     def get_bleu_score(self):
         """BLEU値を計算する"""
         self.model.eval()
-        test_iter = Multi30k(split='test', language_pair=(
-            self.src_language, self.tgt_language))
+        # test_iter = Multi30k(split='test', language_pair=(
+        #     self.src_language, self.tgt_language))
+        test_iter = MiniTanakaDataset("datasets/small_parallel_enja-master", split="test")
         candidate_corpus = list()  # 翻訳結果を入れる
         reference_corpus = list()  # 答えを入れる
         for s, t in test_iter:
@@ -77,7 +79,38 @@ class Translator:
                 src, src_mask, max_len=num_tokens+5).flatten()
             candidate_corpus.append(self.vocab_transform[self.tgt_language].lookup_tokens(list(tgt_tokens.cpu().numpy())))
             reference_corpus.append([['<bos>'] + self.token_transform[self.tgt_language](t) + ['<eos>']])
-        print(len(candidate_corpus))
-        print(len(reference_corpus))
+        # print(candidate_corpus[0])
+        # print(reference_corpus[0])
+        # for i in range(len(candidate_corpus)):
+        #     print(candidate_corpus[i])
+        #     print(reference_corpus[i])
         return bleu_score(candidate_corpus, reference_corpus)
 
+    def output_csv(self):
+        """翻訳結果をcsv出力する"""
+        self.model.eval()
+        test_iter = MiniTanakaDataset("datasets/small_parallel_enja-master", split="test")
+        src_list = list()
+        result_list = list()  # 翻訳結果を入れる
+        tgt_list = list()  
+        for s, t in test_iter:
+            src: torch.Tensor = self.text_transform[self.src_language](
+                s).view(-1, 1)
+            num_tokens = src.shape[0]
+            src_mask = (torch.zeros(num_tokens, num_tokens)).type(torch.bool)
+            tgt_tokens = self.__greedy_decode(
+                src, src_mask, max_len=num_tokens+5).flatten()
+            result_list.append(self.vocab_transform[self.tgt_language].lookup_tokens(list(tgt_tokens.cpu().numpy())))
+            src_list.append(s)
+            tgt_list.append(t)
+
+        for i in range(len(src_list)):
+            result = " ".join(result_list[i][1:-1])
+            with open("translate_output_base.csv", 'a') as f:
+                writer = csv.writer(f)
+                if i == 0:
+                    writer.writerow(["src", "tgt", "result"])
+                writer.writerow([src_list[i], tgt_list[i], result])
+
+
+        #return bleu_score(candidate_corpus, reference_corpus)
