@@ -1,8 +1,8 @@
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
-from torchtext.datasets import Multi30k
+# from torchtext.datasets import Multi30k
 from typing import Iterable, List, Dict, Any, Tuple
-from dataset import JParaCrawlDataset, KFTTDataset
+from dataset import JParaCrawlDataset, KFTTDataset, MiniTanakaDataset
 SRC_LANGUAGE = 'ja'
 TGT_LANGUAGE = 'en'
 
@@ -38,7 +38,8 @@ def make_vocab_transform(unk_idx:int, src_ln:str, tgt_ln:str) -> Tuple[Dict, Dic
 
     for ln in [src_ln, tgt_ln]:
         # train_iter = JParaCrawlDataset("datasets/en-ja/en-ja.bicleaner05.txt", split="train")
-        train_iter = KFTTDataset("datasets/kftt-data-1.0/data/orig", split="train")
+        train_iter = KFTTDataset("datasets/kftt-data-1.0/data/tok", split="train")
+        # train_iter = MiniTanakaDataset("datasets/small_parallel_enja-master", split="train", aug=True)
         vocab_transform[ln] = build_vocab_from_iterator(yield_tokens(train_iter, ln),
                                                         min_freq=1,
                                                         specials=special_simbols,
@@ -54,7 +55,8 @@ def main():
 
     for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
         # train_iter = JParaCrawlDataset("datasets/en-ja/en-ja.bicleaner05.txt", split='train')
-        train_iter = KFTTDataset("datasets/kftt-data-1.0/data/orig", split="train")
+        train_iter = KFTTDataset("datasets/kftt-data-1.0/data/tok", split="val")
+        # train_iter = MiniTanakaDataset("datasets/small_parallel_enja-master", split="train", aug=True)
         vocab_transform[ln] = build_vocab_from_iterator(yield_tokens(train_iter, ln),
                                                         min_freq=1,
                                                         specials=special_simbols,
@@ -62,8 +64,10 @@ def main():
 
     for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
         vocab_transform[ln].set_default_index(UNK_IDX)
-    print(vocab_transform)
-
+    # print(vocab_transform)
+    tokens = token_transform['ja']("6月2日の公演が最後となる。")
+    print(tokens)
+ 
 
 
 if __name__=="__main__":
